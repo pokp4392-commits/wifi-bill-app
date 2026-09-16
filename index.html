@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>ওয়াইফাই বিল Pro</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a73e8">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WiFi বিল">
+<meta name="mobile-web-app-capable" content="yes">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:sans-serif;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:#f2f4f8;padding:12px;padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:calc(12px + env(safe-area-inset-bottom));overscroll-behavior-y:contain}
+.header{background:#fff;padding:16px;border-radius:16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.header h1{font-size:18px}
+.header-actions{display:flex;gap:6px}
+.btn{padding:10px 16px;background:#1a73e8;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:bold;font-size:14px}
+.icon-btn{padding:9px 10px;background:#eef2f7;border:none;border-radius:10px;cursor:pointer;font-size:16px}
+.month-bar{background:#fff;padding:12px 14px;border-radius:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.month-bar b{font-size:15px}
+.stats{display:flex;gap:10px;margin-bottom:12px}
+.card{flex:1;padding:14px;border-radius:14px}.blue{background:#d6e8ff}.orange{background:#ffe0b3}
+.card b{font-size:20px;display:block}
+.searchwrap{margin-bottom:10px}
+.searchwrap input{width:100%;padding:11px 14px;border:none;border-radius:12px;font-size:15px;background:#fff}
+.filters{display:flex;gap:8px;margin-bottom:12px}
+.filters button{flex:1;padding:9px;border:none;border-radius:10px;background:#fff;color:#444;font-size:13px;font-weight:bold;cursor:pointer}
+.filters button.active{background:#1a73e8;color:#fff}
+.form{background:#fff;padding:12px;border-radius:14px;margin-bottom:12px;display:none}
+.form input{width:100%;padding:10px;margin:6px 0;border:1px solid #ddd;border-radius:8px;font-size:16px}
+.row{background:#fff;padding:12px;border-radius:12px;margin-bottom:8px}
+.row-top{display:flex;justify-content:space-between;align-items:center}
+.info.name{font-weight:bold;font-size:15px}
+.mac{font-size:11px;color:#666;margin-top:2px}
+.bill{color:#1a73e8;font-size:13px;margin-top:2px;font-weight:bold}
+.actions{display:flex;gap:6px;align-items:center}
+.toggle{width:44px;height:24px;background:#ccc;border-radius:20px;position:relative;cursor:pointer;flex-shrink:0}.toggle.on{background:#0f9d58}.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s}.toggle.on::after{left:23px}
+.edit{font-size:12px;padding:6px 8px;border:none;border-radius:6px;cursor:pointer;background:#eee}
+.callsms{display:flex;gap:6px;margin-top:8px}
+.callsms a{flex:1;text-align:center;padding:7px;border-radius:8px;font-size:12px;text-decoration:none;font-weight:bold}
+.callbtn{background:#e3f7e9;color:#0f9d58}
+.smsbtn{background:#e3edfc;color:#1a73e8}
+.history{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.hdot{width:22px;height:22px;border-radius:6px;font-size:9px;display:flex;align-items:center;justify-content:center;color:#fff;cursor:pointer;background:#ccc}
+.hdot.on{background:#0f9d58}
+.empty{text-align:center;color:#888;padding:30px 10px;font-size:14px}
+#installBtn{display:none;width:100%;margin-bottom:12px;padding:12px;background:#0f9d58;color:#fff;border:none;border-radius:12px;font-weight:bold;font-size:14px}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;align-items:flex-end}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:16px 16px 0 0;padding:16px;width:100%;max-height:80vh;overflow:auto}
+.modal h3{margin-bottom:10px}
+.modal button.btn{width:100%;margin-top:8px}
+.modal .cancel{width:100%;margin-top:6px;padding:10px;border:none;background:#eee;border-radius:8px}
+#fileImport{display:none}
+</style>
+</head>
+<body>
+<button id="installBtn">📲 হোম স্ক্রিনে অ্যাপ হিসেবে ইনস্টল করুন</button>
+
+<div class="header">
+  <h1>📶 ওয়াইফাই বিল Pro</h1>
+  <div class="header-actions">
+    <button class="icon-btn" onclick="openBackupModal()" title="ব্যাকআপ">💾</button>
+    <button class="btn" onclick="showForm()">+ নতুন</button>
+  </div>
+</div>
+
+<div class="month-bar">
+  <span>বর্তমান মাস</span>
+  <b id="monthLabel"></b>
+</div>
+
+<div class="stats">
+<div class="card blue"><span>এই মাসে সংগ্রহ</span><b id="total">৳0</b><span id="paidCount"></span></div>
+<div class="card orange"><span>বাকি</span><b id="due">৳0</b><span id="dueCount"></span></div>
+</div>
+
+<div class="searchwrap">
+  <input id="searchBox" placeholder="🔍 নাম বা নাম্বার দিয়ে খুঁজুন" oninput="render()">
+</div>
+
+<div class="filters">
+  <button class="active" data-f="all" onclick="setFilter('all')">সবাই</button>
+  <button data-f="due" onclick="setFilter('due')">বাকি</button>
+  <button data-f="paid" onclick="setFilter('paid')">পরিশোধিত</button>
+</div>
+
+<div class="form" id="form">
+<input id="f_name" placeholder="নাম - যেমন ABBA">
+<input id="f_mobile" placeholder="মোবাইল নাম্বার - 017...">
+<input id="f_mac" placeholder="MAC - 18:67:EF:EA:F3:AC">
+<input id="f_bill" type="number" placeholder="বিল - 100">
+<button class="btn" onclick="saveUser()" style="width:100%;margin-top:8px">সেভ করুন</button>
+<button onclick="hideForm()" style="width:100%;margin-top:6px;padding:8px;border:none;background:#eee;border-radius:8px">বাতিল</button>
+</div>
+
+<div id="list"></div>
+
+<!-- Backup / Restore modal -->
+<div class="modal-bg" id="backupModal">
+  <div class="modal">
+    <h3>💾 ব্যাকআপ ও রিস্টোর</h3>
+    <p style="font-size:13px;color:#666;margin-bottom:10px">সব ডেটা ফোনেই সেভ থাকে। ফোন পরিবর্তন বা রিসেট করার আগে ব্যাকআপ ফাইল সেভ করে রাখুন।</p>
+    <button class="btn" onclick="exportData()">⬇️ ব্যাকআপ ডাউনলোড করুন</button>
+    <button class="btn" style="background:#0f9d58" onclick="document.getElementById('fileImport').click()">⬆️ ব্যাকআপ থেকে ফিরিয়ে আনুন</button>
+    <input type="file" id="fileImport" accept="application/json" onchange="importData(event)">
+    <button class="cancel" onclick="closeBackupModal()">বন্ধ করুন</button>
+  </div>
+</div>
+
+<script>
+const MONTH_NAMES_BN = ["জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
+
+function monthKey(d=new Date()){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function monthLabel(key){
+  const [y,m] = key.split('-');
+  return MONTH_NAMES_BN[parseInt(m)-1] + ' ' + y;
+}
+function lastNMonthKeys(n){
+  const arr=[]; const d=new Date();
+  for(let i=n-1;i>=0;i--){
+    const dt = new Date(d.getFullYear(), d.getMonth()-i, 1);
+    arr.push(monthKey(dt));
+  }
+  return arr;
+}
+
+const CURRENT_MONTH = monthKey();
+
+let users = JSON.parse(localStorage.getItem('wifiUsersPro_v2') || 'null');
+if(!users){
+  // migrate from old version if present, else default sample data
+  let old = JSON.parse(localStorage.getItem('wifiUsersPro') || 'null');
+  if(old){
+    users = old.map((u,i) => ({
+      id: 'u'+Date.now()+i,
+      name: u.name, mobile: u.mobile||'', mac: u.mac||'', bill: u.bill||0,
+      paidMonths: u.paid ? [CURRENT_MONTH] : []
+    }));
+  } else {
+    users = [
+      {id:'u1',name:"ABBA",mobile:"",mac:"18:67:EF:EA:F3:AC",bill:100,paidMonths:[]},
+      {id:'u2',name:"ALO 1",mobile:"",mac:"4A:25:CE:35:94:F0",bill:100,paidMonths:[]},
+      {id:'u3',name:"AMENA",mobile:"",mac:"FC:D9:6B:93:1C:A5",bill:100,paidMonths:[]},
+      {id:'u4',name:"Emran TV",mobile:"",mac:"80:9F:9B:EB:91:77",bill:100,paidMonths:[]},
+    ];
+  }
+  save();
+}
+// ensure every user has paidMonths array
+users.forEach(u=>{ if(!u.paidMonths) u.paidMonths=[]; });
+
+let editIndex=-1;
+let currentFilter='all';
+
+function save(){ localStorage.setItem('wifiUsersPro_v2', JSON.stringify(users)); }
+
+function showForm(i=-1){
+  document.getElementById('form').style.display='block';
+  editIndex=i;
+  if(i>=0){
+    let u=users[i];
+    f_name.value=u.name;f_mobile.value=u.mobile;f_mac.value=u.mac;f_bill.value=u.bill;
+  }else{
+    f_name.value='';f_mobile.value='';f_mac.value='';f_bill.value='';
+  }
+  document.getElementById('form').scrollIntoView({behavior:'smooth'});
+}
+function hideForm(){document.getElementById('form').style.display='none';editIndex=-1;}
+
+function saveUser(){
+  let name=f_name.value.trim();
+  if(!name){alert('নাম লিখুন');return;}
+  let u={
+    id: editIndex>=0 ? users[editIndex].id : 'u'+Date.now(),
+    name, mobile:f_mobile.value.trim(), mac:f_mac.value.trim(),
+    bill:parseInt(f_bill.value)||0,
+    paidMonths: editIndex>=0 ? users[editIndex].paidMonths : []
+  };
+  if(editIndex>=0) users[editIndex]=u; else users.push(u);
+  save(); hideForm(); render();
+}
+
+function toggleMonth(userId, mKey){
+  let u = users.find(x=>x.id===userId);
+  if(!u) return;
+  const idx = u.paidMonths.indexOf(mKey);
+  if(idx>=0) u.paidMonths.splice(idx,1); else u.paidMonths.push(mKey);
+  save(); render();
+}
+
+function del(i){
+  if(confirm('ডিলিট করবেন?')){ users.splice(i,1); save(); render(); }
+}
+
+function setFilter(f){
+  currentFilter=f;
+  document.querySelectorAll('.filters button').forEach(b=>b.classList.toggle('active', b.dataset.f===f));
+  render();
+}
+
+function digitsOnly(s){ return (s||'').replace(/[^0-9+]/g,''); }
+
+function render(){
+  document.getElementById('monthLabel').innerText = monthLabel(CURRENT_MONTH);
+  let list=document.getElementById('list'); list.innerHTML='';
+  let total=0, paidC=0;
+  users.forEach(u=>{ if(u.paidMonths.includes(CURRENT_MONTH)){ total+=u.bill; paidC++; } });
+
+  const q = document.getElementById('searchBox').value.trim().toLowerCase();
+  const months6 = lastNMonthKeys(6);
+
+  let shown = 0;
+  users.forEach((u,i)=>{
+    const paidThisMonth = u.paidMonths.includes(CURRENT_MONTH);
+    if(currentFilter==='due' && paidThisMonth) return;
+    if(currentFilter==='paid' && !paidThisMonth) return;
+    if(q && !(u.name.toLowerCase().includes(q) || (u.mobile||'').includes(q))) return;
+    shown++;
+
+    let div=document.createElement('div'); div.className='row';
+
+    let callsms = '';
+    if(u.mobile){
+      const tel = digitsOnly(u.mobile);
+      callsms = `<div class="callsms">
+        <a class="callbtn" href="tel:${tel}">📞 কল</a>
+        <a class="smsbtn" href="sms:${tel}?body=${encodeURIComponent('আপনার এই মাসের ওয়াইফাই বিল ৳'+u.bill+' এখনো বাকি আছে। দয়া করে পরিশোধ করুন।')}">💬 SMS</a>
+      </div>`;
+    }
+
+    let historyDots = months6.map(mk=>{
+      const on = u.paidMonths.includes(mk);
+      const mm = mk.split('-')[1];
+      return `<div class="hdot ${on?'on':''}" onclick="toggleMonth('${u.id}','${mk}')" title="${monthLabel(mk)}">${mm}</div>`;
+    }).join('');
+
+    div.innerHTML = `
+      <div class="row-top">
+        <div class="info">
+          <div class="name">${u.name} ${u.mobile?'- '+u.mobile:''}</div>
+          <div class="mac">${u.mac||''}</div>
+          <div class="bill">৳${u.bill} / মাস</div>
+        </div>
+        <div class="actions">
+          <div class="toggle ${paidThisMonth?'on':''}" onclick="toggleMonth('${u.id}','${CURRENT_MONTH}')"></div>
+          <button class="edit" onclick="showForm(${i})">✏️</button>
+          <button class="edit" onclick="del(${i})">🗑️</button>
+        </div>
+      </div>
+      ${callsms}
+      <div class="history">${historyDots}</div>
+    `;
+    list.appendChild(div);
+  });
+
+  if(shown===0){
+    list.innerHTML = '<div class="empty">কোনো গ্রাহক পাওয়া যায়নি</div>';
+  }
+
+  document.getElementById('total').innerText='৳'+total;
+  document.getElementById('paidCount').innerText=paidC+' জন পরিশোধ করেছে';
+  document.getElementById('due').innerText='৳'+(users.reduce((s,u)=>s+u.bill,0)-total);
+  document.getElementById('dueCount').innerText=(users.length-paidC)+' জন বাকি';
+}
+render();
+
+// ---- Backup / Restore ----
+function openBackupModal(){ document.getElementById('backupModal').classList.add('show'); }
+function closeBackupModal(){ document.getElementById('backupModal').classList.remove('show'); }
+function exportData(){
+  const blob = new Blob([JSON.stringify({users, exportedAt:new Date().toISOString()}, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'wifi-bill-backup-'+CURRENT_MONTH+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function importData(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = JSON.parse(e.target.result);
+      if(!data.users || !Array.isArray(data.users)) throw new Error('bad file');
+      if(confirm('বর্তমান সব ডেটা মুছে এই ব্যাকআপ দিয়ে বদলে দেওয়া হবে। নিশ্চিত?')){
+        users = data.users;
+        users.forEach(u=>{ if(!u.paidMonths) u.paidMonths=[]; });
+        save(); closeBackupModal(); render();
+        alert('ব্যাকআপ সফলভাবে ফিরিয়ে আনা হয়েছে');
+      }
+    }catch(err){
+      alert('এই ফাইলটি সঠিক ব্যাকআপ ফাইল নয়');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ---- PWA: service worker + install button ----
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBtn').style.display='block';
+});
+document.getElementById('installBtn').addEventListener('click', async () => {
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  document.getElementById('installBtn').style.display='none';
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBtn').style.display='none';
+});
+</script>
+</body>
+</html>

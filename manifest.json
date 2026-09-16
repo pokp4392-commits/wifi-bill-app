@@ -1,0 +1,24 @@
+{
+  "name": "ওয়াইফাই বিল Pro",
+  "short_name": "WiFi বিল",
+  "description": "ওয়াইফাই গ্রাহকদের বিল ট্র্যাক করার অ্যাপ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f2f4f8",
+  "theme_color": "#1a73e8",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
